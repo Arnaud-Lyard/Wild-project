@@ -1,5 +1,5 @@
 {
-  "name": "wns-livecodings",
+  "name": "wild-project",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ComicScrip/wns-livecodings.git"
+    "url": "git+https://github.com/Arnaud-Lyard/Wild-project.git"
   },
-  "author": "Pierre Genthon",
+  "author": "Arnaud",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ComicScrip/wns-livecodings/issues"
+    "url": "https://github.com/Arnaud-Lyard/Wild-project/issues"
   },
-  "homepage": "https://github.com/ComicScrip/wns-livecodings#readme",
+  "homepage": "https://github.com/Arnaud-Lyard/Wild-project#readme",
   "dependencies": {
     "apollo-server": "^3.10.3",
     "apollo-server-core": "^3.10.3",
