@@ -1,4 +1,4 @@
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Int, Mutation, Query, Resolver } from "type-graphql";
 import Skill, { SkillInput } from "../entity/Skill";
 import datasource from "../db";
 import { ApolloError } from "apollo-server-errors";
@@ -6,7 +6,7 @@ import { ApolloError } from "apollo-server-errors";
 @Resolver(Skill)
 export class SkillResolver {
   @Query(() => [Skill])
-  async readSkill(): Promise<Skill[]> {
+  async getSkills(): Promise<Skill[]> {
     try {
       const skills = await datasource.getRepository(Skill).find();
       return skills;
@@ -36,7 +36,7 @@ export class SkillResolver {
   }
 
   @Mutation(() => Boolean)
-  async deleteSkill(@Arg("id") id: string): Promise<boolean> {
+  async deleteSkill(@Arg("id", () => Int) id: string): Promise<boolean> {
     const { affected } = await datasource.getRepository(Skill).delete(id);
     if (affected === 0) throw new ApolloError("skill not found", "NOT_FOUND");
     return true;
@@ -44,7 +44,7 @@ export class SkillResolver {
 
   @Mutation(() => Skill)
   async updateSkill(
-    @Arg("id") id: string,
+    @Arg("id", () => Int) id: number,
     @Arg("data") data: SkillInput
   ): Promise<Skill> {
     try {
@@ -52,7 +52,7 @@ export class SkillResolver {
       console.log(data);
 
       const skillToUpdate = await datasource.getRepository(Skill).findOne({
-        where: { id: parseInt(id, 10) },
+        where: { id },
       });
 
       if (skillToUpdate === null)

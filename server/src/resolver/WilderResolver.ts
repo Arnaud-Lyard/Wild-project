@@ -1,4 +1,4 @@
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Mutation, Query, Resolver, Int } from "type-graphql";
 import { ApolloError } from "apollo-server-errors";
 import Wilder, { SkillId, WilderInput } from "../entity/Wilder";
 import datasource from "../db";
@@ -22,6 +22,33 @@ export class WilderResolver {
     }));
   }
 
+  @Query(() => Wilder)
+  async wilder(@Arg("id", () => Int) id: number): Promise<Wilder> {
+    try {
+      const wilder = await datasource.getRepository(Wilder).findOne({
+        where: { id },
+        relations: { grades: { skill: true } },
+      });
+
+      if (wilder === null) {
+        throw new ApolloError("error while reading wilders", "NOT_FOUND");
+      }
+      console.error(wilder);
+
+      return {
+        ...wilder,
+        skills: wilder.grades.map((g) => ({
+          id: g.skill.id,
+          name: g.skill.name,
+          votes: g.votes,
+        })),
+      };
+    } catch (err) {
+      console.error(err);
+      throw new ApolloError("error while reading wilders", "NETWORK_ERROR");
+    }
+  }
+
   @Mutation(() => Wilder)
   async createWilder(@Arg("data") data: WilderInput): Promise<Wilder> {
     console.log({ data });
@@ -31,7 +58,7 @@ export class WilderResolver {
   }
 
   @Mutation(() => Boolean)
-  async deleteWilder(@Arg("id") id: string): Promise<boolean> {
+  async deleteWilder(@Arg("id", () => Int) id: string): Promise<boolean> {
     const { affected } = await datasource.getRepository(Wilder).delete(id);
     if (affected === 0) throw new ApolloError("wilder not found", "NOT_FOUND");
     return true;
@@ -39,13 +66,13 @@ export class WilderResolver {
 
   @Mutation(() => Wilder)
   async updateWilder(
-    @Arg("id") id: string,
+    @Arg("id", () => Int) id: number,
     @Arg("data") data: WilderInput
   ): Promise<Wilder | undefined> {
     try {
       const { name, bio, avatarUrl, city, skills } = data;
       const wilderToUpdate = await datasource.getRepository(Wilder).findOne({
-        where: { id: parseInt(id, 10) },
+        where: { id },
         relations: { grades: { skill: true } },
       });
 

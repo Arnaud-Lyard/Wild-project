@@ -1,0 +1,6 @@
+query GetSkills {
+  getSkills {
+    id
+    name
+  }
+}

@@ -1,30 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Loader from "../components/Loader";
-import SkillForm from "../components/SkillForm.";
-import { getAllSkills, deleteSkill, updateSkill } from "../services/skills";
+import SkillForm from "../components/SkillForm";
 import { ISkill } from "../types/ISkill";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import {
+  GetSkillsDocument,
+  useDeleteSkillMutation,
+  useGetSkillsQuery,
+  useUpdateSkillMutation,
+} from "../services/graphql/schema";
 
 export default function SkillsAdmin() {
-  const [skills, setSkills] = useState<ISkill[]>([]);
-  const [loading, setLoading] = useState(false);
   const [parent] = useAutoAnimate<any>();
 
-  const fetchSkills = () => {
-    setLoading(true);
-    getAllSkills()
-      .then(setSkills)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  };
+  const { loading, data } = useGetSkillsQuery();
+  const skills: ISkill[] = data?.getSkills || [];
 
-  useEffect(() => {
-    fetchSkills();
-  }, []);
+  const [deleteSkillMutation] = useDeleteSkillMutation();
+
+  const [updateSkillMutation] = useUpdateSkillMutation();
 
   return (
     <div>
-      <SkillForm setSkills={setSkills} />
+      <SkillForm />
       <ul ref={parent}>
         {loading && !skills.length ? (
           <Loader />
@@ -39,19 +37,26 @@ export default function SkillsAdmin() {
                 onChange={(e) => {
                   const name = e.target.value;
                   if (name) {
-                    updateSkill(s.id, { name });
+                    updateSkillMutation({
+                      variables: {
+                        data: { name },
+                        updateSkillId: s.id,
+                      },
+                      refetchQueries: [{ query: GetSkillsDocument }],
+                    });
                   }
-                  setSkills((old) =>
-                    old.map((sk) => (s.id === sk.id ? { ...sk, name } : sk))
-                  );
                 }}
               />
 
               <button
                 onClick={() => {
                   if (window.confirm("sure ?")) {
-                    setSkills((old) => old.filter((sk) => s.id !== sk.id));
-                    deleteSkill(s.id);
+                    deleteSkillMutation({
+                      variables: {
+                        deleteSkillId: s.id,
+                      },
+                      refetchQueries: [{ query: GetSkillsDocument }],
+                    });
                   }
                 }}
               >
